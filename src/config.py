@@ -18,5 +18,5 @@ ORM = {
 DEBUG = env.bool('DEBUG', default=False)
 LISTEN = env.str('LISTEN', default='0.0.0.0')  # noqa: S104
 PORT = env.int('PORT', default=8000)
-BROKER = env.str('BROKER_URL', default='redis://redis:6379/0')
+BROKER = env.str('BROKER_URL', default='redis://localhost:6379/0')
 NOMINATIM = env.str('NOMINATIM_URL', default='http://geobase:8080')
