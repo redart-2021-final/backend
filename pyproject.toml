@@ -1,0 +1,65 @@
+[tool.poetry]
+name = "hack2021_final"
+version = "0.1.0"
+description = ""
+authors = []
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+
+fastapi = "^0.70.0"
+environs = "^9.3.5"
+tortoise-orm = {extras = ["asyncpg"], version = "^0.17.8"}
+aerich = {git = "https://github.com/tortoise/aerich.git", rev = "dev"}
+uvicorn = "^0.15.0"
+uvloop = "^0.16.0"
+ciso8601 = "^2.2.0"
+rq = "^1.10.0"
+rq-scheduler = "^0.11.0"
+httpx = "^0.21.1"
+scikit-learn = "1.0.1"
+
+[tool.poetry.dev-dependencies]
+ipython = "^7.30.0"
+flakehell = "^0.9.0"
+flake8-isort = "^4.1.1"
+flake8-bandit = "^2.1.2"
+flake8-bugbear = "^21.11.29"
+flake8-builtins = "^1.5.3"
+flake8-variables-names = "^0.0.4"
+flake8-annotations = "^2.7.0"
+flake8-annotations-complexity = "^0.0.6"
+flake8 = "3.8.0"
+
+[tool.isort]
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 3
+
+[tool.flakehell]
+max_line_length = 100
+format = "grouped"
+show_source = true
+
+[tool.flakehell.plugins]
+pyflakes = ["+*"]
+pycodestyle = ["+*", "-W503"]  # line break before binary operator
+flake8-bugbear = ["+*", "-B008"]  # function calls in argument defaults
+flake8-annotations = [
+	"+*",
+	"-ANN002",  # typed *args
+	"-ANN003",  # typed **kwargs
+	"-ANN1*",  # typed self, cls
+]
+"flake8-*" = ["+*"]
+mccabe = ["+*"]
+
+[tool.aerich]
+tortoise_orm = "config.ORM"
+location = "./src/migrations"
+src_folder = "./src"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

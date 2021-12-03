@@ -1,0 +1,39 @@
+#syntax=docker/dockerfile:1.2
+
+# build: DOCKER_BUILDKIT=1 docker build ...
+
+FROM python:3.9-slim as builder
+
+RUN apt-get update
+RUN apt-get -y --no-install-recommends install git gcc make libc-dev
+RUN pip install "poetry>=1.0"
+
+WORKDIR /app
+COPY pyproject.toml .
+COPY poetry.lock* .
+
+RUN mkdir /wheels \
+  && poetry export -f requirements.txt --without-hashes -o /wheels/r.txt \
+  && pip wheel -r /wheels/r.txt -w /wheels
+
+
+FROM python:3.9-slim
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN --mount=from=builder,source=/wheels,target=/wheels \
+  apt-get update && apt-get install -y --no-install-recommends git \
+  && pip install -r /wheels/r.txt -f /wheels \
+  && apt-get autoremove -y git && rm -rf /var/lib/apt/lists
+
+WORKDIR /app
+COPY pyproject.toml .
+COPY src src
+COPY docker/boot.sh .
+
+ARG PORT=8000
+ENV PORT=$PORT
+
+ENTRYPOINT ["/app/boot.sh"]
+CMD ["server"]

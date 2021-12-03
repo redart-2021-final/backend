@@ -1,0 +1,4 @@
+.git/
+docker/
+!docker/boot.sh
+__pycache__

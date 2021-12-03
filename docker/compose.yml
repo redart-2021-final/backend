@@ -1,0 +1,70 @@
+version: '3.5'
+
+x-defaults: &defaults
+  image: hack
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.prod
+  environment:
+    PORT: 8000
+    DEBUG: ${DEBUG:-false}
+    DB_URL: postgres://postgres:postgres@db:5432/hack
+    BROKER_URL: redis://redis:6379/0
+  depends_on:
+    - db
+    - redis
+  restart: unless-stopped
+
+services:
+  backend:
+    ports:
+      - '80:8000'
+    <<: *defaults
+
+  worker:
+    command: [worker]
+    <<: *defaults
+
+  scheduler:
+    command: [scheduler]
+    <<: *defaults
+
+  dashboard:
+    image: eoranged/rq-dashboard
+    ports:
+      - '127.0.0.1:81:9181'
+    environment:
+      RQ_DASHBOARD_REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+
+  geobase:
+    image: mediagis/nominatim:4.0
+    environment:
+      PBF_URL: https://download.geofabrik.de/russia/ural-fed-district-latest.osm.pbf
+      REPLICATION_URL: https://download.geofabrik.de/russia/ural-fed-district-updates/
+    volumes:
+      - nominatim-db:/var/lib/postgresql/
+      - nominatim-data:/nominatim/data
+    restart: unless-stopped
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: hack
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db:/var/lib/postgresql/data/pgdata
+    restart: unless-stopped
+
+
+volumes:
+  db: {}
+  nominatim-db: {}
+  nominatim-data: {}
